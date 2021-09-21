@@ -5,7 +5,7 @@ import { BaseReader, StringReader, StringReaderOptions, UrlReader, UrlReaderOpti
 
 
 export interface GCodeViewerProps extends
-    Omit<HTMLProps<HTMLDivElement>, "onError">,
+    Omit<HTMLProps<HTMLDivElement>, "onError" | "onProgress">,
     Omit<GCodeViewerContentProps, "reader">
 {
     url?: UrlReaderOptions["url"]
@@ -23,6 +23,7 @@ export function GCodeViewer(
         visible,
         quality,
         reqOptions,
+        onProgress,
         onFinishLoading,
         onError,
         ...otherProps
@@ -37,7 +38,16 @@ export function GCodeViewer(
             throw new Error("invalid reader options")
         }
     }, [url, file])
-    const modelProps: GCodeViewerContentProps = {reader, visible, layerColor, topLayerColor, quality, onFinishLoading, onError}
+    const modelProps: GCodeViewerContentProps = {
+        reader,
+        visible,
+        layerColor,
+        topLayerColor,
+        quality,
+        onProgress,
+        onFinishLoading,
+        onError
+    }
     return (
         <div {...otherProps}>
             <React.Suspense fallback={null}>

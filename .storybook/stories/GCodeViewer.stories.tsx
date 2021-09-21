@@ -18,6 +18,8 @@ function Demo(props: Omit<GCodeViewerProps, "url">) {
                 backgroundColor: "white"
             }}
             {...props}
+            onProgress={console.log}
+            onFinishLoading={console.log}
         />
     );
 }

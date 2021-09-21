@@ -3,14 +3,25 @@ import { GPoint } from "./types";
 import { GPointFromCmd, isMoveCmd } from "./parser";
 
 const MAX_QUALITY_RES = 10
-const Z_DIM_THRESHOLD = .4
+const Z_BASE_CENTER_CALC_THRESHOLD = .4
+const Z_LIMITS_CALC_THRESHOLD = .1
 const BIG_NUM = 2**32
 const LINE_SPLIT = "\n"
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
 
+export interface GCodeParseProgress {
+    read: number
+    baseCenter: {x: number, y: number}
+    max: {x: number, y: number, z: number}
+    min: {x: number, y: number, z: number}
+    filamentLength: number
+}
+
 export interface GCodeOptions {
     quality?: number
+    onProgress?: (progress: GCodeParseProgress) => any
+    onFinished?: (finished: GCodeParseProgress) => any
 }
 
 export class GCode {
@@ -24,6 +35,7 @@ export class GCode {
     }
     public filament: number = 0
     public readonly opts: GCodeOptions
+    private read: number = 0
     private count: number = 0
 
     private readonly omitCycle: boolean[] = []
@@ -41,18 +53,36 @@ export class GCode {
         }
     }
 
-    public parse = async (reader: BaseReader, onProgress?: () => void) => {
+    private getProgress = (): GCodeParseProgress => {
+        return {
+            read: this.read,
+            baseCenter: this.baseCenter ? {...this.baseCenter}:{x: 0, y: 0},
+            max: {...this.limits.max},
+            min: {...this.limits.min},
+            filamentLength: this.filament
+        }
+    }
+
+    public parse = async (reader: BaseReader) => {
         let prevCodeLine = ""
+        this.read = 0
         while (true) {
             const chunk = await reader.read()
             if (!chunk) break
+            this.read += chunk.length
             const codeLines = chunk.split(LINE_SPLIT)
             codeLines[0] = prevCodeLine + codeLines[0]
             prevCodeLine = codeLines.pop() || ""
             this.parseCodeLines(codeLines)
-            if (onProgress) onProgress()
+            if (this.opts.onProgress) {
+                new Promise<void>((res) => {
+                    this.opts.onProgress(this.getProgress())
+                    res()
+                })
+            }
             await sleep(0)
         }
+        if (this.opts.onFinished) this.opts.onFinished(this.getProgress())
     }
 
     private updateBaseCenter() {
@@ -86,12 +116,10 @@ export class GCode {
         for (const line of codeLines) {
             if (!isMoveCmd(line)) continue
             const point = GPointFromCmd(line, this.lastPoint)
-            if (point.z > Z_DIM_THRESHOLD && !this.baseCenter) {
-                this.updateBaseCenter()
-            }
+            if (point.z > Z_BASE_CENTER_CALC_THRESHOLD && !this.baseCenter) this.updateBaseCenter()
             this.lastPoint = point
 
-            if (point.z > Z_DIM_THRESHOLD && point.type === "extrude") this.updateLimits(point)
+            if (point.z > Z_LIMITS_CALC_THRESHOLD && point.type === "extrude") this.updateLimits(point)
             if (!this.layers[point.z]) this.layers[point.z] = []
             if (point.type === "travel") {
                 this.layers[point.z].push(point)
