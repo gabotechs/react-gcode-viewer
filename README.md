@@ -55,7 +55,8 @@ ReactDOM.render(<App />, document.getElementById('root'));
 | `layerColor`               | `string`                   | `false`      | (default "grey") layer color |
 | `topLayerColor`            | `string`                   | `false`      | (default "hotpink") top layer color |
 | `reqOptions`               | `RequestInit`              | `false`      | fetch options for customizing the http query made for retrieving the GCode file, only valid if "url" is specified |
-| `onFinishLoading`          | `() => any`                | `false`      | callback triggered when GCode is fully loaded |
+| `onProgress`               | `(p: GCodeParseProgress) => any` | `false`| callback triggered on parsing progress |
+| `onFinishLoading`          | `(p: GCodeParseProgress) => any` | `false`| callback triggered when GCode is fully loaded |
 | `onError`                  | `(err: Error) => any`      | `false`      | callback triggered when an error occurred while loading GCode|
 
 The component also accepts ```<div/>``` props
