@@ -4,7 +4,7 @@ import { GPointFromCmd, isMoveCmd } from "./parser";
 
 const MAX_QUALITY_RES = 10
 const Z_BASE_CENTER_CALC_THRESHOLD = .4
-const Z_LIMITS_CALC_THRESHOLD = .1
+const Z_LIMITS_CALC_THRESHOLD = .4
 const BIG_NUM = 2**32
 const LINE_SPLIT = "\n"
 
@@ -30,8 +30,8 @@ export class GCode {
 
     public baseCenter?: {x: number, y: number} = undefined
     public limits = {
-        max: {x: -BIG_NUM, y: -BIG_NUM, z: -BIG_NUM},
-        min: {x: BIG_NUM, y: BIG_NUM, z: BIG_NUM}
+        max: {x: 0, y: 0, z: 0},
+        min: {x: BIG_NUM, y: BIG_NUM, z: 0}
     }
     public filament: number = 0
     public readonly opts: GCodeOptions
