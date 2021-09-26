@@ -11,10 +11,12 @@ export interface GCodeViewerProps extends
     url?: UrlReaderOptions["url"]
     file?: StringReaderOptions["file"]
     reqOptions?: RequestInit
+    canvasId?: string
 }
 
 export function GCodeViewer(
     {
+        canvasId,
         children,
         url,
         file,
@@ -51,7 +53,11 @@ export function GCodeViewer(
     return (
         <div {...otherProps}>
             <React.Suspense fallback={null}>
-                <Canvas style={{width: '100%', height: '100%'}}>
+                <Canvas
+                    id={canvasId}
+                    style={{width: '100%', height: '100%'}}
+                    gl={{preserveDrawingBuffer: true}}
+                >
                     <GCodeModel {...modelProps}/>
                 </Canvas>
             </React.Suspense>
