@@ -3,7 +3,7 @@
 React component for visualizing GCodes using Three.js.
 
 <p align="center">
-    <img src="docs/demo.gif" height="396" width="540">
+    <img src="docs/demo.gif" >
 </p>
 
 ## Install
