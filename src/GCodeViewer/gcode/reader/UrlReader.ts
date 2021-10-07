@@ -1,6 +1,6 @@
 import {BaseReader} from "./base";
 
-const DEFAULT_CHUNK_SIZE = 1024**2
+const DEFAULT_CHUNK_SIZE = 1024*64
 
 export interface UrlReaderOptions {
     chunkSize?: number

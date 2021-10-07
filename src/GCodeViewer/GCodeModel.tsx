@@ -1,16 +1,18 @@
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GCode, GCodeOptions, GCodeParseProgress } from "./gcode/GCode";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import GCodeLayer from "./GCodeLayer";
 import { GPoint } from "./gcode/types";
 import { BaseReader } from "./gcode/reader";
+import { Color } from "three";
 
 const MIN_POINTS = 20
 const CAMERA_OFFSET = 100
 const DEFAULT_HEIGHT = 20
-const DEFAULT_CENTER = {x: 0, y: 0}
-const DEFAULT_ROTATION= [-90, 10, -45]
+const DEFAULT_CENTER = {x: 100, y: 100}
+const DEFAULT_ROTATION: [number, number, number] = [-Math.PI/2, 0, 0]
+const BACKGROUND = new Color("white")
 
 export interface GCodeViewerContentProps {
     reader: BaseReader
@@ -100,8 +102,8 @@ export default function GCodeModel(
         camera.position.set(-CAMERA_OFFSET, CAMERA_OFFSET, 0)
     }, [camera])
 
+    const cameraPos: [number, number, number] = [-CAMERA_OFFSET, CAMERA_OFFSET*.5, CAMERA_OFFSET]
     const position: [number, number, number] = [-center.x, -center.y, -height]
-    const rotation = DEFAULT_ROTATION.map(n => n*Math.PI/180) as [number, number, number]
     const limit = Math.ceil(Object.keys(sortedLayers).length*visible)
     const baseOpacity = .7
     const color = (index: number) => index+1 > limit-2 ? topLayerColor: layerColor
@@ -110,8 +112,16 @@ export default function GCodeModel(
 
     return (
         <>
-            <OrbitControls {...{} as any}/>
-            <group rotation={rotation}>
+            <PerspectiveCamera
+                makeDefault
+                position={cameraPos}
+                near={1}
+                far={1000}
+                {...{} as any}
+            />
+            <scene background={BACKGROUND}/>
+            <OrbitControls/>
+            <group rotation={DEFAULT_ROTATION}>
                 <group position={position}>
                     {sortedLayers
                         .slice(0, limit)

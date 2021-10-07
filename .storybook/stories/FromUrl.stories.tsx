@@ -3,7 +3,7 @@ import { GCodeViewer, GCodeViewerProps } from "../../src";
 import { ComponentMeta } from "@storybook/react";
 import React from "react";
 
-const url = "https://storage.googleapis.com/ucloud-v3/6127a7f9aa32f718b8c1ab4f.gcode"
+const url = "https://storage.googleapis.com/ucloud-v3/61575ddb9d8a176950431398.gcode"
 
 function FromUrl(props: Omit<GCodeViewerProps, "url">) {
     return (
@@ -18,6 +18,8 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
                 backgroundColor: "white"
             }}
             {...props}
+            layerColor={"#008675"}
+            topLayerColor={"#e79f0d"}
             onProgress={console.log}
             onFinishLoading={console.log}
         />
