@@ -2,8 +2,10 @@ import { BaseReader } from "./reader";
 import { GPoint } from "./types";
 import { GPointFromCmd, isMoveCmd } from "./parser";
 
+const MIN_POINTS_USEFUL_LAYER = 10
 const MAX_QUALITY_RES = 10
 const Z_BASE_CENTER_CALC_THRESHOLD = .4
+const Z_LAYER_HEIGHT_CALC_THRESHOLD = .4
 const Z_LIMITS_CALC_THRESHOLD = .4
 const BIG_NUM = 2**32
 const LINE_SPLIT = "\n"
@@ -28,6 +30,8 @@ export class GCode {
     private lastPoint: GPoint = {x: 0, y: 0, z: 0, e: 0, type: "travel"}
     public readonly layers: Record<number, GPoint[]> = {}
 
+    public layerHeight: number = 0
+    public firstLayerHeight: number = 0
     public baseCenter?: {x: number, y: number} = undefined
     public limits = {
         max: {x: 0, y: 0, z: 0},
@@ -112,20 +116,34 @@ export class GCode {
         if (move.e && move.e > this.filament) this.filament = move.e
     }
 
+    private updateLayerHeight() {
+        const zHeights = Object.keys(this.layers)
+            .map(Number)
+            .filter(z => this.layers[z].length > MIN_POINTS_USEFUL_LAYER)
+            .sort()
+        if (zHeights.length < 2) return
+        this.layerHeight = zHeights[1]-zHeights[0]
+        this.firstLayerHeight = zHeights[0]
+    }
+
     private parseCodeLines(codeLines: string[]) {
         for (const line of codeLines) {
             if (!isMoveCmd(line)) continue
             const point = GPointFromCmd(line, this.lastPoint)
+            let z = point.z
+            z = Math.round((point.z - point.z % (this.layerHeight || .2)) * 1000)/ 1000
             if (point.z > Z_BASE_CENTER_CALC_THRESHOLD && !this.baseCenter) this.updateBaseCenter()
+            if (point.z > Z_LIMITS_CALC_THRESHOLD && point.type === "extrude") this.updateLimits(point)
+            if (point.z > Z_LAYER_HEIGHT_CALC_THRESHOLD && !this.layerHeight) this.updateLayerHeight()
+
             this.lastPoint = point
 
-            if (point.z > Z_LIMITS_CALC_THRESHOLD && point.type === "extrude") this.updateLimits(point)
-            if (!this.layers[point.z]) this.layers[point.z] = []
+            if (!this.layers[z]) this.layers[z] = []
             if (point.type === "travel") {
-                this.layers[point.z].push(point)
+                this.layers[z].push(point)
                 continue
             } else if (this.omitCycle[this.count % this.qualityRes]) {
-                this.layers[point.z].push(point)
+                this.layers[z].push(point)
             }
             this.count++
         }

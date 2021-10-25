@@ -7,8 +7,8 @@ import { GPoint } from "./gcode/types";
 import { BaseReader } from "./gcode/reader";
 import { Color } from "three";
 
-const MIN_POINTS = 20
-const CAMERA_OFFSET = 100
+const MIN_POINTS = 2
+const CAMERA_OFFSET = 120
 const DEFAULT_HEIGHT = 20
 const DEFAULT_CENTER = {x: 100, y: 100}
 const DEFAULT_ROTATION: [number, number, number] = [-Math.PI/2, 0, 0]
