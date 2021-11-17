@@ -1,15 +1,14 @@
 import React, { HTMLProps, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
 import GCodeModel, { GCodeViewerContentProps } from "./GCodeModel";
-import { BaseReader, StringReader, StringReaderOptions, UrlReader, UrlReaderOptions } from "./gcode/reader";
+import { BaseReader, UrlReader, UrlReaderOptions } from "./gcode/reader";
 
 
 export interface GCodeViewerProps extends
     Omit<HTMLProps<HTMLDivElement>, "onError" | "onProgress">,
     Omit<GCodeViewerContentProps, "reader">
 {
-    url?: UrlReaderOptions["url"]
-    file?: StringReaderOptions["file"]
+    url: UrlReaderOptions["url"]
     reqOptions?: RequestInit
     canvasId?: string
 }
@@ -19,11 +18,13 @@ export function GCodeViewer(
         canvasId,
         children,
         url,
-        file,
+        showAxes,
+        orbitControls,
         layerColor,
         topLayerColor,
         visible,
         quality,
+        floorProps,
         reqOptions,
         onProgress,
         onFinishLoading,
@@ -32,20 +33,17 @@ export function GCodeViewer(
     }: GCodeViewerProps
 ) {
     const reader: BaseReader = useMemo(() => {
-        if (url) {
-            return new UrlReader({url, reqOptions})
-        } else if (file) {
-            return new StringReader({file})
-        } else {
-            throw new Error("invalid reader options")
-        }
-    }, [url, file])
+        return new UrlReader({url, reqOptions})
+    }, [url])
     const modelProps: GCodeViewerContentProps = {
         reader,
         visible,
         layerColor,
         topLayerColor,
         quality,
+        showAxes,
+        orbitControls,
+        floorProps,
         onProgress,
         onFinishLoading,
         onError

@@ -1,4 +1,4 @@
-import { CSSProperties, FC, useCallback, useState } from "react";
+import { CSSProperties, FC, useCallback, useMemo, useState } from "react";
 import { GCodeViewer, GCodeViewerProps } from "../../src";
 import { ComponentMeta } from "@storybook/react";
 import React from "react";
@@ -16,7 +16,7 @@ const style: CSSProperties = {
 
 function FromUrl(props: Omit<GCodeViewerProps, "url">) {
     const [file, setFile] = useState<File>()
-
+    const url = useMemo(() => file ? URL.createObjectURL(file):null, [file])
     const preventDefault = useCallback((e: React.DragEvent<any>) => {
         e.preventDefault()
     }, [])
@@ -31,15 +31,16 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
 
     return (
         <>
-            {file && <GCodeViewer
-                file={file}
+            {url && <GCodeViewer
+                url={url}
                 style={style}
+                orbitControls
                 {...extraProps}
                 {...props}
                 layerColor={"#008675"}
                 topLayerColor={"#e79f0d"}
             />}
-            {!file && <div style={style} {...extraProps}>
+            {!url && <div style={style} {...extraProps}>
                 <h4>drop here</h4>
             </div>}
         </>

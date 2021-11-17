@@ -9,6 +9,8 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
     return (
         <GCodeViewer
             url={url}
+            showAxes
+            orbitControls
             style={{
                 position: "absolute",
                 top: '0vh',
@@ -16,6 +18,10 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
                 width: '100vw',
                 height: '100vh',
                 backgroundColor: "white"
+            }}
+            floorProps={{
+                gridWidth: 300,
+                gridLength: 300
             }}
             {...props}
             layerColor={"#008675"}

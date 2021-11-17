@@ -1,24 +1,33 @@
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GCode, GCodeOptions, GCodeParseProgress } from "./gcode/GCode";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import GCodeLayer from "./GCodeLayer";
 import { GPoint } from "./gcode/types";
 import { BaseReader } from "./gcode/reader";
 import { Color } from "three";
+import Camera from "./SceneElements/Camera";
+import Floor from "./SceneElements/Floor";
+import { useThree } from "@react-three/fiber";
 
 const MIN_POINTS = 2
 const CAMERA_OFFSET = 120
 const DEFAULT_HEIGHT = 20
 const DEFAULT_CENTER = {x: 100, y: 100}
-const DEFAULT_ROTATION: [number, number, number] = [-Math.PI/2, 0, 0]
 const BACKGROUND = new Color("white")
+
+export interface FloorProps {
+    gridWidth?: number
+    gridLength?: number
+}
 
 export interface GCodeViewerContentProps {
     reader: BaseReader
     layerColor?: CSSProperties["color"]
     topLayerColor?: CSSProperties["color"]
+    floorProps?: FloorProps
     visible?: number
+    showAxes?: boolean
+    orbitControls?: boolean
     quality?: number
     onProgress?: (progress: GCodeParseProgress) => any
     onFinishLoading?: (finish: GCodeParseProgress) => any
@@ -48,12 +57,23 @@ export default function GCodeModel(
         topLayerColor = "hotpink",
         visible = 1,
         quality = 1,
+        showAxes,
+        orbitControls,
         onProgress,
         onFinishLoading,
+        floorProps: {
+            gridLength = 0,
+            gridWidth = 0
+        } = {},
         onError
     }: GCodeViewerContentProps
 ) {
     const {camera} = useThree()
+    useEffect(() => {
+        camera.position.set(.7*CAMERA_OFFSET, -CAMERA_OFFSET, CAMERA_OFFSET)
+    }, [camera])
+    const [sceneReady, setSceneReady] = useState(false)
+
     const gCodeRef = useRef<GCode>()
     const callbacks = useRef({onFinishLoading, onError, onProgress})
     useEffect(() => {
@@ -62,18 +82,18 @@ export default function GCodeModel(
         callbacks.current.onProgress = onProgress
     }, [onFinishLoading, onError, onProgress])
 
-    const [height, setHeight] = useState(DEFAULT_HEIGHT)
     const [center, setCenter] = useState(DEFAULT_CENTER)
     const [layers, setLayers] = useState({} as Record<number, GPoint[]>)
+
+    useEffect(() => {
+        const lookAt: [number, number, number] = [center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]
+        camera.lookAt(...lookAt)
+    }, [center.x, center.y])
 
     const onGCodeProgress = useCallback((progress: GCodeParseProgress) => {
         setLayers({...gCodeRef.current?.layers})
         setCenter(progress.baseCenter)
-        setHeight((prev) => {
-            const height = progress.max.z / 2
-            if (height > prev) return height
-            return prev
-        })
+        setSceneReady(true)
     }, [])
 
     useEffect(() => {
@@ -98,12 +118,7 @@ export default function GCodeModel(
 
     const sortedLayers = useSortedLayers(layers)
 
-    useEffect(() => {
-        camera.position.set(-CAMERA_OFFSET, CAMERA_OFFSET, 0)
-    }, [camera])
-
-    const cameraPos: [number, number, number] = [-CAMERA_OFFSET, CAMERA_OFFSET*.5, CAMERA_OFFSET]
-    const position: [number, number, number] = [-center.x, -center.y, -height]
+    const target: [number, number, number] = [center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]
     const limit = Math.ceil(Object.keys(sortedLayers).length*visible)
     const baseOpacity = .7
     const color = (index: number) => index+1 > limit-2 ? topLayerColor: layerColor
@@ -112,30 +127,28 @@ export default function GCodeModel(
 
     return (
         <>
-            <PerspectiveCamera
-                makeDefault
-                position={cameraPos}
-                near={1}
-                far={1000}
-                {...{} as any}
+            <Camera/>
+            {sceneReady && showAxes && <axesHelper args={[50]}/>}
+            <Floor
+                visible={sceneReady}
+                length={gridLength}
+                width={gridWidth}
             />
             <scene background={BACKGROUND}/>
-            <OrbitControls/>
-            <group rotation={DEFAULT_ROTATION}>
-                <group position={position}>
-                    {sortedLayers
-                        .slice(0, limit)
-                        .map((points, i) =>
-                            <GCodeLayer
-                                key={`${i} ${points.length}`}
-                                points={points}
-                                color={color(i)}
-                                opacity={opacity(i)}
-                                linewidth={lineWidth(i)}
-                            />
-                        )
-                    }
-                </group>
+            {sceneReady && orbitControls && <OrbitControls target={target}/>}
+            <group>
+                {sortedLayers
+                    .slice(0, limit)
+                    .map((points, i) =>
+                        <GCodeLayer
+                            key={`${i} ${points.length}`}
+                            points={points}
+                            color={color(i)}
+                            opacity={sceneReady ? opacity(i):0}
+                            linewidth={lineWidth(i)}
+                        />
+                    )
+                }
             </group>
         </>
     )
