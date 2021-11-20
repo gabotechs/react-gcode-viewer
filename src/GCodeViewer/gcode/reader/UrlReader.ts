@@ -12,7 +12,7 @@ export default class UrlReader implements BaseReader {
     private opts: UrlReaderOptions
     private text: string = ""
     private finished: boolean = false
-    private reader?: ReadableStreamDefaultReader<string>
+    private reader?: ReadableStreamDefaultReader<Uint8Array>
     constructor(opts: UrlReaderOptions) {
         this.opts = opts
     }
@@ -23,14 +23,15 @@ export default class UrlReader implements BaseReader {
         if (!this.reader) {
             const r = await fetch(this.opts.url, this.opts.reqOptions)
             if (!r.body) throw new Error("no body in response")
-            this.reader = r.body.pipeThrough(new TextDecoderStream()).getReader()
+            this.reader = r.body.getReader()
         }
+        const decoder = new TextDecoder()
         while (this.text.length < chunkSize) {
             const {value, done} = await this.reader.read()
             if (done || !value) {
                 break
             } else {
-                this.text += value
+                this.text += decoder.decode(value)
             }
         }
         if (this.text.length >= chunkSize) {
