@@ -13,7 +13,7 @@ npm install --save react-gcode-viewer
 ```
 or
 ```shell
-yarn install react-gcode-viewer
+yarn add react-gcode-viewer
 ```
 
 ## Usage
