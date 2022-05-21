@@ -39,6 +39,9 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
                 {...props}
                 layerColor={"#008675"}
                 topLayerColor={"#e79f0d"}
+                onProgress={console.log}
+                onFinishLoading={console.log}
+                onError={console.error}
             />}
             {!url && <div style={style} {...extraProps}>
                 <h4>drop here</h4>
