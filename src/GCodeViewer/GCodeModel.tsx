@@ -80,6 +80,9 @@ export default function GCodeModel(
             setGPointBatches(prev => {
                 const sum = prev.reduce((acc, p) => acc+p.points.length, 0)
                 const batchPoints = points.slice(sum)
+                if (batchPoints.length === 0) {
+                    return prev
+                }
                 const avgZ = batchPoints.reduce((acc, p) => acc + p.z, 0) / (batchPoints.length || 1)
                 return [...prev, { points: batchPoints, avgZ }]
             })
@@ -111,38 +114,45 @@ export default function GCodeModel(
         })
     }, [reader, quality])
 
-    const target: [number, number, number] = [center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]
-    const maxZ = useMemo(() => Math.max(...gPointBatches.map(({ avgZ }) => avgZ))*visible, [gPointBatches, visible])
-    const color = (z: number) => Math.abs(maxZ - z) < .4 ? topLayerColor: layerColor
-    const opacity = (z: number) => (z/maxZ)*(1-BASE_OPACITY)+BASE_OPACITY
-    const lineWidth = (z: number) => Math.abs(maxZ - z) < .4 ? 2:.1
+    const maxZ = useMemo(() => Math.max(...gPointBatches.map(({ avgZ }) => avgZ)), [gPointBatches])
+    const visibleZ = maxZ*Math.min(visible, 1)
+    
+    const filteredGPoints = gPointBatches.filter(({ avgZ }) => avgZ <= visibleZ)
+    
+    const isLastLayerBatch = (batch: GPointBatch) =>
+        batch === filteredGPoints[filteredGPoints.length-1] || Math.abs(visibleZ - batch.avgZ) < .4
+    
+    const color = (batch: GPointBatch) => isLastLayerBatch(batch) ? topLayerColor : layerColor
+    const opacity = (batch: GPointBatch) => (batch.avgZ/visibleZ)*(1-BASE_OPACITY)+BASE_OPACITY
+    const lineWidth = (batch: GPointBatch) => isLastLayerBatch(batch) ? 2 : .1
 
     return (
         <>
             <Camera
                 initialPosition={{x: .7*CAMERA_OFFSET, y: -CAMERA_OFFSET, z: CAMERA_OFFSET}}
             />
-            {sceneReady && showAxes && <axesHelper args={[50]}/>}
+            {sceneReady && showAxes &&
+                <axesHelper args={[50]}/>
+            }
             <Floor
                 visible={sceneReady}
                 length={gridLength}
                 width={gridWidth}
             />
             <scene background={BACKGROUND}/>
-            {sceneReady && orbitControls && <OrbitControls target={target}/>}
+            {sceneReady && orbitControls &&
+                <OrbitControls target={[center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]}/>
+            }
             <group>
-                {gPointBatches
-                    .filter(({ avgZ }) => avgZ <= maxZ)
-                    .map(({ points, avgZ }, i) =>
-                        <GCodeLines
-                            key={`${i} ${points.length}`}
-                            points={points}
-                            color={color(avgZ)}
-                            opacity={sceneReady ? opacity(avgZ):0}
-                            linewidth={lineWidth(avgZ)}
-                        />
-                    )
-                }
+                {filteredGPoints.map((pointBatch, i) =>
+                    <GCodeLines
+                        key={`${i} ${pointBatch.points.length}`}
+                        points={pointBatch.points}
+                        color={color(pointBatch)}
+                        opacity={sceneReady ? opacity(pointBatch):0}
+                        linewidth={lineWidth(pointBatch)}
+                    />
+                )}
             </group>
         </>
     )
