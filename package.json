@@ -1,6 +1,6 @@
 {
   "name": "react-gcode-viewer",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "react component for visualizing GCodes in the browser using three.js",
   "author": "Gabriel Musat",
   "license": "MIT",
