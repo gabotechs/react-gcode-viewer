@@ -1,19 +1,19 @@
-import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GCode, GCodeOptions, GCodeParseProgress } from "./gcode/GCode";
 import { OrbitControls } from "@react-three/drei";
-import GCodeLayer from "./GCodeLayer";
-import { GPoint } from "./gcode/types";
-import { BaseReader } from "./gcode/reader";
+import { useThree } from "@react-three/fiber";
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { Color } from "three";
+import { GCode, GCodeParseProgress } from "./gcode/GCode";
+import { BaseReader } from "./gcode/reader";
+import { GPoint } from "./gcode/types";
+import GCodeLines from "./GCodeLines";
 import Camera from "./SceneElements/Camera";
 import Floor from "./SceneElements/Floor";
-import { useThree } from "@react-three/fiber";
 
-const MIN_POINTS = 2
 const CAMERA_OFFSET = 120
 const DEFAULT_HEIGHT = 20
 const DEFAULT_CENTER = {x: 100, y: 100}
 const BACKGROUND = new Color("white")
+const BASE_OPACITY = .7
 
 export interface FloorProps {
     gridWidth?: number
@@ -34,20 +34,9 @@ export interface GCodeViewerContentProps {
     onError?: (err: Error) => any
 }
 
-function useSortedLayers(layers: Record<number, GPoint[]>) {
-    return useMemo(() =>
-            Object.entries(layers)
-                .filter(([,points]) => {
-                    let count = 0
-                    for (const point of points) {
-                        if (point.type === "extrude") count++
-                        if (count >= MIN_POINTS) return true
-                    }
-                    return false
-                })
-                .sort(([a], [b]) => Number(a) > Number(b) ? 1:-1)
-                .map(el => el[1])
-        , [layers])
+interface GPointBatch {
+    points: GPoint[]
+    avgZ: number
 }
 
 export default function GCodeModel(
@@ -69,9 +58,6 @@ export default function GCodeModel(
     }: GCodeViewerContentProps
 ) {
     const {camera} = useThree()
-    useEffect(() => {
-        camera.position.set(.7*CAMERA_OFFSET, -CAMERA_OFFSET, CAMERA_OFFSET)
-    }, [camera])
     const [sceneReady, setSceneReady] = useState(false)
 
     const gCodeRef = useRef<GCode>()
@@ -83,51 +69,59 @@ export default function GCodeModel(
     }, [onFinishLoading, onError, onProgress])
 
     const [center, setCenter] = useState(DEFAULT_CENTER)
-    const [layers, setLayers] = useState({} as Record<number, GPoint[]>)
+    const [gPointBatches, setGPointBatches] = useState<GPointBatch[]>([])
 
     useEffect(() => {
-        const lookAt: [number, number, number] = [center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]
-        camera.lookAt(...lookAt)
+        camera.lookAt(center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT)
     }, [center.x, center.y])
 
-    const onGCodeProgress = useCallback((progress: GCodeParseProgress) => {
-        setLayers({...gCodeRef.current?.layers})
-        setCenter(progress.baseCenter)
-        setSceneReady(true)
-    }, [])
-
     useEffect(() => {
-        const onProgress = callbacks.current.onProgress || (() => {})
-        const onFinished = callbacks.current.onFinishLoading || (() => {})
-        const onError = callbacks.current.onError || (() => {})
-        const options: GCodeOptions = {
+        function onGCodeProgress({ points, baseCenter }: GCodeParseProgress) {
+            setGPointBatches(prev => {
+                const sum = prev.reduce((acc, p) => acc+p.points.length, 0)
+                const batchPoints = points.slice(sum)
+                const avgZ = batchPoints.reduce((acc, p) => acc + p.z, 0) / (batchPoints.length || 1)
+                return [...prev, { points: batchPoints, avgZ }]
+            })
+            setCenter(baseCenter)
+            setSceneReady(true)
+        }
+        
+        setGPointBatches([])
+        gCodeRef.current?.abort()
+        gCodeRef.current = new GCode({
             quality,
             onProgress: (progress) => {
                 onGCodeProgress(progress)
-                onProgress(progress)
+                if (callbacks.current.onProgress) {
+                    callbacks.current.onProgress(progress)
+                }
             },
             onFinished: (progress) => {
                 onGCodeProgress(progress)
-                onFinished(progress)
+                if (callbacks.current.onFinishLoading) {
+                    callbacks.current.onFinishLoading(progress)
+                }
             }
-        }
-        const gCode = new GCode(options)
-        gCodeRef.current = gCode
-        gCode.parse(reader).catch(onError)
-    }, [reader, quality, onGCodeProgress])
-
-    const sortedLayers = useSortedLayers(layers)
+        })
+        gCodeRef.current.parse(reader).catch((err) => {
+            if (callbacks.current.onError) {
+                callbacks.current.onError(err)
+            }
+        })
+    }, [reader, quality])
 
     const target: [number, number, number] = [center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]
-    const limit = Math.ceil(Object.keys(sortedLayers).length*visible)
-    const baseOpacity = .7
-    const color = (index: number) => index+1 > limit-2 ? topLayerColor: layerColor
-    const opacity = (index: number) => (index/limit)*(1-baseOpacity)+baseOpacity
-    const lineWidth = (index: number) => index+1 > limit-2 ? 2:.1
+    const maxZ = useMemo(() => Math.max(...gPointBatches.map(({ avgZ }) => avgZ))*visible, [gPointBatches, visible])
+    const color = (z: number) => Math.abs(maxZ - z) < .4 ? topLayerColor: layerColor
+    const opacity = (z: number) => (z/maxZ)*(1-BASE_OPACITY)+BASE_OPACITY
+    const lineWidth = (z: number) => Math.abs(maxZ - z) < .4 ? 2:.1
 
     return (
         <>
-            <Camera/>
+            <Camera
+                initialPosition={{x: .7*CAMERA_OFFSET, y: -CAMERA_OFFSET, z: CAMERA_OFFSET}}
+            />
             {sceneReady && showAxes && <axesHelper args={[50]}/>}
             <Floor
                 visible={sceneReady}
@@ -137,15 +131,15 @@ export default function GCodeModel(
             <scene background={BACKGROUND}/>
             {sceneReady && orbitControls && <OrbitControls target={target}/>}
             <group>
-                {sortedLayers
-                    .slice(0, limit)
-                    .map((points, i) =>
-                        <GCodeLayer
+                {gPointBatches
+                    .filter(({ avgZ }) => avgZ <= maxZ)
+                    .map(({ points, avgZ }, i) =>
+                        <GCodeLines
                             key={`${i} ${points.length}`}
                             points={points}
-                            color={color(i)}
-                            opacity={sceneReady ? opacity(i):0}
-                            linewidth={lineWidth(i)}
+                            color={color(avgZ)}
+                            opacity={sceneReady ? opacity(avgZ):0}
+                            linewidth={lineWidth(avgZ)}
                         />
                     )
                 }

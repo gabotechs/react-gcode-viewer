@@ -11,7 +11,7 @@ export interface GCodeLineProps extends LineDashedMaterialProps {
     showTravel?: boolean
 }
 
-function GCodeLayer(
+function GCodeLines(
     {
         points,
         showTravel = false,
@@ -57,4 +57,4 @@ function GCodeLayer(
     )
 }
 
-export default GCodeLayer
+export default GCodeLines

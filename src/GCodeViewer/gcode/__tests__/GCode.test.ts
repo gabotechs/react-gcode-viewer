@@ -1,5 +1,5 @@
 import fs from "fs"
-import GCode from "../GCode";
+import { GCode } from "../GCode";
 import StringReader from "../reader/StringReader";
 
 describe('gcode file is loaded', function () {
@@ -7,6 +7,6 @@ describe('gcode file is loaded', function () {
         const file = fs.readFileSync(__dirname+"/test.gcode")
         const gCode = new GCode()
         await gCode.parse(new StringReader({file: file.toString()}))
-        expect(gCode.layers[0.2].length).toEqual(4)
+        expect(gCode.points.length).toEqual(7)
     });
 });
