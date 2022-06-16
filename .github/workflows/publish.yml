@@ -17,7 +17,7 @@ jobs:
         run: |
           yarn install
           yarn test
-          yarn build-storybook
+          yarn build
       - name: Deploy Storybook 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
