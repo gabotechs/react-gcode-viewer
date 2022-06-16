@@ -1,5 +1,6 @@
 name: Publish
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -11,6 +12,7 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
         with:
+          token: ${{ secrets.ACCESS_TOKEN }}
           persist-credentials: false
       - name: Install and Build 🔧
         run: |
@@ -25,8 +27,9 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - name: Commit version
         run: |
-          git add package.json
-          git commit -m "[skip ci] bump version"
+          git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
+          git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
+          npm version ${{ steps.deploy.version }} -m "[skip ci] bump version"
           git push
 
 
