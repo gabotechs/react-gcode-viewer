@@ -27,7 +27,6 @@ export default [
             commonjs(),
             typescript({ tsconfig: "./tsconfig.json" }),
         ],
-        external: Object.keys(packageJson.peerDependencies)
     },
     {
         input: "lib/types/index.d.ts",
