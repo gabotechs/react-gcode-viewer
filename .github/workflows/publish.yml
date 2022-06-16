@@ -6,7 +6,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build-storybook:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -18,8 +18,12 @@ jobs:
           yarn install
           yarn test
           yarn build-storybook
-      - name: Deploy 🚀
+      - name: Deploy Storybook 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
         with:
           branch: gh-pages
           folder: storybook-static
+      - name: Deploy version
+        uses: mikeal/merge-release@master
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
