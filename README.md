@@ -45,6 +45,9 @@ function App() {
 
 ReactDOM.render(<App />, document.getElementById('root'));
 ```
+## Demos
+
+You can see working the examples from `.storybook/stories` [here](https://gabotechs.github.io/react-gcode-viewer)
 
 ## Props
 
