@@ -19,6 +19,8 @@ jobs:
           yarn install
           yarn test
           yarn build
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
       - name: Deploy version
         uses: mikeal/merge-release@master
         id: deploy
@@ -30,6 +32,4 @@ jobs:
           git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
           git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
           npm version ${{ steps.deploy.version }} -m "[skip ci] bump version"
-          git push
-
-
+          git push origin HEAD:${GITHUB_REF##*/}
