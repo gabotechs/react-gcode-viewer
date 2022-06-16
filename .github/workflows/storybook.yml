@@ -2,7 +2,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - new-build-system
+      - master
 permissions:
   contents: write
 jobs:
@@ -16,6 +16,7 @@ jobs:
       - name: Install and Build 🔧
         run: |
           yarn install
+          yarn test
           yarn build-storybook
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.3.3
