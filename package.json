@@ -48,7 +48,8 @@
     "build": "rollup -c",
     "test": "jest",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "publish": "npm publish"
   },
   "files": [
     "lib",
