@@ -17,8 +17,6 @@ jobs:
           yarn install
           yarn test
           yarn build
-      - uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
       - name: Deploy version
         uses: mikeal/merge-release@master
         id: deploy
@@ -27,8 +25,10 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
       - run: git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
       - run: git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
-      - run: |
-          npm version ${{ steps.deploy.outputs.version }} --no-git-tag-version
+      - name: Commit new version
+        run: |
+          last_tag=$(git describe --tags --abbrev=0)
+          npm version $last_tag --no-git-tag-version
           git add package.json
           git commit -m "[skip ci] bump version"
           git push
