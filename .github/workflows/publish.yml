@@ -24,5 +24,7 @@ jobs:
         with:
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
       - name: Publish
-        run: npm config set_authToken=${{ secrets.ACCESS_TOKEN }} && npm publish
+        run: npm publish
+        env:
+          NPM_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
