@@ -18,17 +18,11 @@ jobs:
           yarn test
           yarn build
       - name: Deploy version
-        uses: mikeal/merge-release@master
-        id: deploy
+        uses: phips28/gh-action-bump-version@master
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - run: git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
-      - run: git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
-      - name: Commit new version
-        run: |
-          last_tag=$(git describe --tags --abbrev=0)
-          npm version $last_tag --no-git-tag-version
-          git add package.json
-          git commit -m "[skip ci] bump version"
-          git push
+        with:
+          commit-message: 'CI: bumps version to {{version}} [skip ci]'
+      - name: Publish
+        run: npm config set_authToken=${{ secrets.ACCESS_TOKEN }} && npm publish
+
