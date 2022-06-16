@@ -26,4 +26,5 @@ jobs:
       - name: Deploy version
         uses: mikeal/merge-release@master
         env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
