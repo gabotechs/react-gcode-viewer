@@ -3858,12 +3858,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18.0.5":
-  version: 18.0.5
-  resolution: "@types/react-dom@npm:18.0.5"
+"@types/react-dom@npm:^17.0.2":
+  version: 17.0.17
+  resolution: "@types/react-dom@npm:17.0.17"
   dependencies:
-    "@types/react": "*"
-  checksum: cd48b81950f499b52a3f0c08261f00046f9b7c96699fa249c9664e257e820daf6ecac815cd1028cebc9d105094adc39d047d1efd79214394b8b2d515574c0787
+    "@types/react": ^17
+  checksum: 23caf98aa03e968811560f92a2c8f451694253ebe16b670929b24eaf0e7fa62ba549abe9db0ac028a9d8a9086acd6ab9c6c773f163fa21224845edbc00ba6232
   languageName: node
   linkType: hard
 
@@ -3885,7 +3885,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:^18.0.13":
+"@types/react@npm:*":
   version: 18.0.13
   resolution: "@types/react@npm:18.0.13"
   dependencies:
@@ -3893,6 +3893,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: ef976dbcd5605f3b8db2b286b1b35471d574dca711a2b6928c164075efd3ee731b3f32708f1ae09cfb04b003f9a4a9774cc386c32688f7fae864ea53a1c238f6
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^17, @types/react@npm:^17.0.2":
+  version: 17.0.46
+  resolution: "@types/react@npm:17.0.46"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 10e41e74aef40363a47a7aeb11b0179854eca0e0635300aac54a81f10ab0cbd7b8d099fed19ae919e25ceae42518db8a25d481625c23b97d7fdc10d1934b710c
   languageName: node
   linkType: hard
 
@@ -3949,12 +3960,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/three@npm:^0.141.0":
-  version: 0.141.0
-  resolution: "@types/three@npm:0.141.0"
-  dependencies:
-    "@types/webxr": "*"
-  checksum: b4d1fd19eec01a15374a9e0a181207f0b2a27df881f3cfc63ce167b36b214c6926d80ac0eeb80c365832f69e7180db514a859808150ece1c1503a4eb58d4ac1e
+"@types/three@npm:^0.132.2":
+  version: 0.132.2
+  resolution: "@types/three@npm:0.132.2"
+  checksum: e97d1fa5e837d902f4d4b96b6564f701816a1b198161ffc3b95bb2e67aa98031d35cba70cf197eb71926d02d2bf0cecfb3b3ecbb2b7fa861964d2e24fdb9b48a
   languageName: node
   linkType: hard
 
@@ -4003,13 +4012,6 @@ __metadata:
     anymatch: ^3.0.0
     source-map: ^0.6.0
   checksum: e594a1357cbbc2f7c6ca47785c5a11adb5591a774a69afaeab07cd6f6bff6c6aea2030bd37b32bdd19d0ec2336a346db754e8d8d236ba8effeab542716fb32b7
-  languageName: node
-  linkType: hard
-
-"@types/webxr@npm:*":
-  version: 0.4.0
-  resolution: "@types/webxr@npm:0.4.0"
-  checksum: 4388c18a5b08ef4aa97f2177d3d80d384c5557c4b06278215d46472585923128fb316353e5fb799d22ffe99be149af90d0c27c41cb3681e82228088e48b24184
   languageName: node
   linkType: hard
 
@@ -13677,9 +13679,9 @@ __metadata:
     "@storybook/addon-links": ^6.5.9
     "@storybook/react": ^6.5.9
     "@types/jest": ^28.1.1
-    "@types/react": ^18.0.13
-    "@types/react-dom": ^18.0.5
-    "@types/three": ^0.141.0
+    "@types/react": ^17.0.2
+    "@types/react-dom": ^17.0.2
+    "@types/three": ^0.132.2
     babel-loader: ^8.2.5
     jest: ^28.1.1
     postcss: ^8.4.14
