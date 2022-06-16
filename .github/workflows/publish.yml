@@ -23,10 +23,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
-      - name: Publish
-        run: |
-          echo '//https://www.npmjs.com//:_authToken=${NPM_TOKEN}' > .npmrc
-          npm publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_AUTH_TOKEN }}
 
