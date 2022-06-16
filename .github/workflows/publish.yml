@@ -2,7 +2,7 @@ name: Publish
 on:
   push:
     branches:
-      - fix-deploy
+      - master
 
 jobs:
   publish:
@@ -17,7 +17,7 @@ jobs:
           yarn install
           yarn test
           yarn build
-      - name: Deploy version
+      - name: Bump version
         uses: phips28/gh-action-bump-version@master
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
