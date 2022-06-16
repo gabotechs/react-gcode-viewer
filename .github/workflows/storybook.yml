@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - master
-
+permissions:
+  contents: write
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -16,9 +17,9 @@ jobs:
         run: |
           yarn install
           yarn test
-          yarn build
-      - name: Deploy version
-        uses: mikeal/merge-release@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          yarn build-storybook
+      - name: Deploy Storybook 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages
+          folder: storybook-static
