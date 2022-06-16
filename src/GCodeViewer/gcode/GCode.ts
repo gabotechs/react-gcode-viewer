@@ -59,7 +59,7 @@ export class GCode {
         this._abort = true
     }
 
-    private get getProgress(): GCodeParseProgress {
+    private getProgress(): GCodeParseProgress {
         return {
             points: this.points,
             read: this.read,
@@ -81,10 +81,10 @@ export class GCode {
             codeLines[0] = prevCodeLine + codeLines[0]
             prevCodeLine = codeLines.pop() || ""
             this.parseCodeLines(codeLines)
-            if (this.opts.onProgress) this.opts.onProgress(this.getProgress)
+            if (this.opts.onProgress) this.opts.onProgress(this.getProgress())
             await sleep(0)
         }
-        if (this.opts.onFinished) this.opts.onFinished(this.getProgress)
+        if (this.opts.onFinished) this.opts.onFinished(this.getProgress())
     }
 
     private updateBaseCenter() {

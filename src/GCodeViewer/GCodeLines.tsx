@@ -17,8 +17,8 @@ function GCodeLines(
         showTravel = false,
         ...otherProps
     }: GCodeLineProps) {
-    const extrudeRef = useRef<BufferGeometry>()
-    const travelRef = useRef<BufferGeometry>()
+    const extrudeRef = useRef<BufferGeometry>(null)
+    const travelRef = useRef<BufferGeometry>(null)
 
     const setLines = useCallback((geometry: BufferGeometry, type: LineType) => {
         const indices: number[] = []
