@@ -19,6 +19,14 @@ jobs:
           yarn build
       - name: Deploy version
         uses: mikeal/merge-release@master
+        id: deploy
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: Commit version
+        run: |
+          git add package.json
+          git commit -m "[skip ci] bump version"
+          git push
+
+
