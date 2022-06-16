@@ -11,7 +11,6 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
           persist-credentials: false
       - name: Install and Build 🔧
         run: |
@@ -26,9 +25,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-      - name: Commit version
-        run: |
-          git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
-          git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
-          npm version ${{ steps.deploy.outputs.version }} -m "[skip ci] bump version"
-          git push origin master
+      - run: git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
+      - run: git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
+      - run: |
+          npm version ${{ steps.deploy.outputs.version }} --no-git-tag-version
+          git add package.json
+          git commit -m "[skip ci] bump version"
+          git push
