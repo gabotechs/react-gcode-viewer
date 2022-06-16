@@ -1,6 +1,6 @@
 {
   "name": "react-gcode-viewer",
-  "version": "2.0.4",
+  "version": "2.0.10",
   "description": "react component for visualizing GCodes in the browser using three.js",
   "author": "Gabriel Musat",
   "license": "MIT",
@@ -33,8 +33,8 @@
     "yarn-audit-fix": "^9.3.1"
   },
   "dependencies": {
-    "@react-three/drei": "^9.13.2",
-    "@react-three/fiber": "^8.0.26"
+    "@react-three/drei": "^7.8.5",
+    "@react-three/fiber": "^7.0.7"
   },
   "peerDependencies": {
     "react": "^17.0.2",
@@ -48,8 +48,7 @@
     "build": "rollup -c",
     "test": "jest",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
-    "publish": "npm publish"
+    "build-storybook": "build-storybook"
   },
   "files": [
     "lib",
