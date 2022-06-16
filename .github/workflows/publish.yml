@@ -24,7 +24,9 @@ jobs:
         with:
           commit-message: 'CI: bumps version to {{version}} [skip ci]'
       - name: Publish
-        run: npm publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          npm publish
         env:
           NPM_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
