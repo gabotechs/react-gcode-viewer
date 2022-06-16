@@ -1,6 +1,5 @@
 name: Publish
 on:
-  pull_request:
   push:
     branches:
       - master
@@ -32,4 +31,4 @@ jobs:
           git config --global user.email $(git --no-pager show -s --format='%ae' HEAD)
           git config --global user.name $(git --no-pager show -s --format='%an' HEAD)
           npm version ${{ steps.deploy.outputs.version }} -m "[skip ci] bump version"
-          git push origin HEAD:${GITHUB_REF##*/}
+          git push origin master
