@@ -1,15 +1,13 @@
 import { OrbitControls } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { Color } from "three";
 import { GCode, GCodeParseProgress } from "./gcode/GCode";
 import { BaseReader } from "./gcode/reader";
 import { GPoint } from "./gcode/types";
 import GCodeLines from "./GCodeLines";
-import Camera from "./SceneElements/Camera";
+import Camera, { CameraInitialPosition } from "./SceneElements/Camera";
 import Floor from "./SceneElements/Floor";
 
-const CAMERA_OFFSET = 120
 const DEFAULT_HEIGHT = 20
 const DEFAULT_CENTER = {x: 100, y: 100}
 const BACKGROUND = new Color("white")
@@ -22,6 +20,7 @@ export interface FloorProps {
 
 export interface GCodeViewerContentProps {
     reader: BaseReader
+    cameraInitialPosition?: CameraInitialPosition
     layerColor?: CSSProperties["color"]
     topLayerColor?: CSSProperties["color"]
     floorProps?: FloorProps
@@ -42,6 +41,11 @@ interface GPointBatch {
 export default function GCodeModel(
     {
         reader,
+        cameraInitialPosition = {
+            latitude: Math.PI / 8,
+            longitude: -Math.PI / 8,
+            distance: 350
+        },
         layerColor = "grey",
         topLayerColor = "hotpink",
         visible = 1,
@@ -57,7 +61,6 @@ export default function GCodeModel(
         onError
     }: GCodeViewerContentProps
 ) {
-    const {camera} = useThree()
     const [sceneReady, setSceneReady] = useState(false)
 
     const gCodeRef = useRef<GCode>()
@@ -72,10 +75,6 @@ export default function GCodeModel(
     const [gPointBatches, setGPointBatches] = useState<GPointBatch[]>([])
 
     useEffect(() => {
-        camera.lookAt(center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT)
-    }, [center.x, center.y])
-
-    useEffect(() => {
         function onGCodeProgress({ points, baseCenter }: GCodeParseProgress) {
             setGPointBatches(prev => {
                 const sum = prev.reduce((acc, p) => acc+p.points.length, 0)
@@ -86,7 +85,9 @@ export default function GCodeModel(
                 const avgZ = batchPoints.reduce((acc, p) => acc + p.z, 0) / (batchPoints.length || 1)
                 return [...prev, { points: batchPoints, avgZ }]
             })
-            setCenter(baseCenter)
+            setCenter(prev =>
+                prev.x !== baseCenter.x && prev.y !== baseCenter.y ? baseCenter : prev
+            )
             setSceneReady(true)
         }
         
@@ -126,10 +127,21 @@ export default function GCodeModel(
     const opacity = (batch: GPointBatch) => (batch.avgZ/visibleZ)*(1-BASE_OPACITY)+BASE_OPACITY
     const lineWidth = (batch: GPointBatch) => isLastLayerBatch(batch) ? 2 : .1
 
+    const modelCenter = useMemo<[number, number, number]>(() =>
+        [center.x, center.y, DEFAULT_HEIGHT]
+    , [center.x, center.y])
+    
+    const gridCenter = useMemo<[number, number, number] | undefined>(() =>
+        gridWidth > 0 && gridLength > 0 ? [gridWidth / 2, gridLength / 2, DEFAULT_HEIGHT] : undefined
+    , [gridWidth, gridLength])
+    
+    const cameraCenter = gridCenter ?? modelCenter
+    
     return (
         <>
             <Camera
-                initialPosition={{x: .7*CAMERA_OFFSET, y: -CAMERA_OFFSET, z: CAMERA_OFFSET}}
+                initialPosition={cameraInitialPosition}
+                center={cameraCenter}
             />
             {sceneReady && showAxes &&
                 <axesHelper args={[50]}/>
@@ -141,7 +153,7 @@ export default function GCodeModel(
             />
             <scene background={BACKGROUND}/>
             {sceneReady && orbitControls &&
-                <OrbitControls target={[center.x || gridWidth/2, center.y || gridLength/2, DEFAULT_HEIGHT]}/>
+                <OrbitControls target={cameraCenter}/>
             }
             <group>
                 {filteredGPoints.map((pointBatch, i) =>

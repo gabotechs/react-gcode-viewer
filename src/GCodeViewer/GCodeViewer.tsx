@@ -29,6 +29,7 @@ export function GCodeViewer(
         onProgress,
         onFinishLoading,
         onError,
+        cameraInitialPosition,
         ...otherProps
     }: GCodeViewerProps
 ) {
@@ -37,6 +38,7 @@ export function GCodeViewer(
     }, [url])
     const modelProps: GCodeViewerContentProps = {
         reader,
+        cameraInitialPosition,
         visible,
         layerColor,
         topLayerColor,
