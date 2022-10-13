@@ -26,7 +26,7 @@ function FromUrl(props: Omit<GCodeViewerProps, "url">) {
             {...props}
             layerColor={"#008675"}
             topLayerColor={"#e79f0d"}
-            onProgress={console.log}
+            onProgress={() => {}}
             onFinishLoading={console.log}
         />
     );
