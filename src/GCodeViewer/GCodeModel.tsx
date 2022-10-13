@@ -1,4 +1,3 @@
-import { OrbitControls } from "@react-three/drei";
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { Color } from "three";
 import { GCode, GCodeParseProgress } from "./gcode/GCode";
@@ -7,6 +6,7 @@ import { GPoint } from "./gcode/types";
 import GCodeLines from "./GCodeLines";
 import Camera, { CameraInitialPosition } from "./SceneElements/Camera";
 import Floor from "./SceneElements/Floor";
+import OrbitControls from "./SceneElements/OrbitControls";
 
 const DEFAULT_HEIGHT = 20
 const DEFAULT_CENTER = {x: 100, y: 100}
