@@ -1,3 +1,3 @@
 export interface BaseReader {
-    read(): Promise<string | null>
+  read: () => Promise<string | null>
 }
