@@ -2238,7 +2238,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-three/fiber@npm:^8.8.10":
+"@react-three/fiber@npm:^8.6.2":
   version: 8.8.10
   resolution: "@react-three/fiber@npm:8.8.10"
   dependencies:
@@ -14877,7 +14877,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-gcode-viewer@workspace:."
   dependencies:
-    "@react-three/fiber": ^8.8.10
+    "@react-three/fiber": ^8.6.2
     "@rollup/plugin-commonjs": ^22.0.0
     "@rollup/plugin-node-resolve": ^13.3.0
     "@rollup/plugin-typescript": ^8.3.3
